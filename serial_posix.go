@@ -168,13 +168,15 @@ func openPort(name string, baud int, databits byte, parity Parity, stopbits Stop
 				}
 	*/
 
-	return &Port{f: f}, nil
+	return &Port{f: f, fd: fd}, nil
 }
 
 type Port struct {
 	// We intentionly do not use an "embedded" struct so that we
 	// don't export File
 	f *os.File
+
+	fd C.int
 }
 
 func (p *Port) Read(b []byte) (n int, err error) {
@@ -188,7 +190,7 @@ func (p *Port) Write(b []byte) (n int, err error) {
 // Discards data written to the port but not transmitted,
 // or data received but not read
 func (p *Port) Flush() error {
-	_, err := C.tcflush(C.int(p.f.Fd()), C.TCIOFLUSH)
+	_, err := C.tcflush(p.fd, C.TCIOFLUSH)
 	return err
 }
 
